@@ -984,7 +984,7 @@ pub async fn connect_with_options<A: ToServerAddrs>(
         Authorization::Nkey(seed) => {
             let key_pair = std::sync::Arc::new(nkeys::KeyPair::from_seed(seed.as_str()).unwrap());
             let mut nonce = server_info.nonce.clone();
-            match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(async_nats::AuthError::new) {
+            match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
                 Ok(..) => {
                     connect_info.nkey = Some(key_pair.public_key().clone());
                     connect_info.signature = Some(nonce);
