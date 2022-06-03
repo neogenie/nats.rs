@@ -173,6 +173,15 @@ impl ConnectOptions {
         }
     }
 
+    pub fn with_nkey(seed: String) -> Self {
+        ConnectOptions {
+            auth: Authorization::Nkey(
+                seed,
+            ),
+            ..Default::default()
+        }
+    }
+
     /// Authenticate with a JWT. Requires function to sign the server nonce.
     /// The signing function is asynchronous
     ///

@@ -981,6 +981,22 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             connect_info.user = Some(user);
             connect_info.pass = Some(pass);
         }
+        Authorization::Nkey(seed) => {
+            let key_pair = std::sync::Arc::new(nkeys::KeyPair::from_seed(seed.as_str()).unwrap());
+            let mut nonce = server_info.nonce.clone();
+            match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(async_nats::AuthError::new) {
+                Ok(..) => {
+                    connect_info.nkey = Some(key_pair.public_key().clone());
+                    connect_info.signature = Some(nonce);
+                }
+                Err(e) => {
+                    println!(
+                        "JWT auth is disabled. sign error: {} (possibly invalid key or corrupt cred file?)",
+                        e
+                    );
+                }
+            };
+        },
         Authorization::Jwt(jwt, sign_fn) => match sign_fn.call(server_info.nonce.clone()).await {
             Ok(sig) => {
                 connect_info.user_jwt = Some(jwt.clone());
@@ -1445,6 +1461,9 @@ pub(crate) enum Authorization {
 
     /// Authenticate using a username and password.
     UserAndPassword(String, String),
+
+    /// Authenticate using Nkey.
+    Nkey(String),
 
     /// Authenticate using a jwt and signing function.
     Jwt(
