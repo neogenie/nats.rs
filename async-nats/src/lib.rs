@@ -987,7 +987,7 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
                 Ok(signed) => {
                     connect_info.nkey = Some(key_pair.public_key().clone());
-                    connect_info.signature = Some(signed.into_string_lossy());
+                    connect_info.signature = Some(String::from_utf8(signed).unwrap());
                 }
                 Err(e) => {
                     println!(
