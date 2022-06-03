@@ -982,7 +982,7 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             connect_info.pass = Some(pass);
         }
         Authorization::Nkey(seed) => {
-            let key_pair = nkeys::KeyPair::from_seed(seed.into()).unwrap();
+            let key_pair = nkeys::KeyPair::from_seed(seed.as_str()).unwrap();
             let nonce = server_info.nonce.clone();
             match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
                 Ok(signed) => {
