@@ -982,13 +982,12 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             connect_info.pass = Some(pass);
         }
         Authorization::Nkey(seed) => {
-            let key_pair = std::sync::Arc::new(nkeys::KeyPair::from_seed(seed.as_str()).unwrap());
+            let key_pair = nkeys::KeyPair::from_seed(seed.into()).unwrap();
             let nonce = server_info.nonce.clone();
             match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
                 Ok(signed) => {
                     connect_info.nkey = Some(key_pair.public_key().clone());
-                    // connect_info.signature = Some(String::from_utf8(signed).expected());
-                    connect_info.signature = Some(signed.to_str().unwrap().into());
+                    connect_info.signature = Some(signed.to_string());
                 }
                 Err(e) => {
                     println!(
