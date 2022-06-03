@@ -983,15 +983,15 @@ pub async fn connect_with_options<A: ToServerAddrs>(
         }
         Authorization::Nkey(seed) => {
             let key_pair = std::sync::Arc::new(nkeys::KeyPair::from_seed(seed.as_str()).unwrap());
-            let mut nonce = server_info.nonce.clone();
+            let nonce = server_info.nonce.clone();
             match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
-                Ok(..) => {
+                Ok(signed) => {
                     connect_info.nkey = Some(key_pair.public_key().clone());
-                    connect_info.signature = Some(nonce);
+                    connect_info.signature = Some(signed.into());
                 }
                 Err(e) => {
                     println!(
-                        "JWT auth is disabled. sign error: {} (possibly invalid key or corrupt cred file?)",
+                        "Nkey auth is disabled. sign error: {}",
                         e
                     );
                 }
