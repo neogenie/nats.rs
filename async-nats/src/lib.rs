@@ -135,7 +135,7 @@ use tokio::net::TcpStream;
 use tokio::sync::{mpsc, oneshot};
 use tokio::task;
 
-use secstr::*;
+use secstr::SecStr;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
