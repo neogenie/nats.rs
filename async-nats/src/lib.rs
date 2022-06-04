@@ -135,6 +135,8 @@ use tokio::net::TcpStream;
 use tokio::sync::{mpsc, oneshot};
 use tokio::task;
 
+use secstr::*;
+
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -981,13 +983,13 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             connect_info.user = Some(user);
             connect_info.pass = Some(pass);
         }
-        Authorization::Nkey(seed) => {
-            let key_pair = nkeys::KeyPair::from_seed(seed.as_str()).unwrap();
+        Authorization::NKey(seed) => {
+            let key_pair = nkeys::KeyPair::from_seed(base64_url::encode(seed.unsecure()).as_str()).unwrap();
             let nonce = server_info.nonce.clone();
             match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
                 Ok(signed) => {
                     connect_info.nkey = Some(key_pair.public_key().clone());
-                    connect_info.signature = Some(signed.to_string());
+                    connect_info.signature = Some(base64_url::encode(&signed));
                 }
                 Err(e) => {
                     println!(
@@ -1462,8 +1464,8 @@ pub(crate) enum Authorization {
     /// Authenticate using a username and password.
     UserAndPassword(String, String),
 
-    /// Authenticate using Nkey.
-    Nkey(String),
+    /// Authenticate using NKey.
+    NKey(SecStr),
 
     /// Authenticate using a jwt and signing function.
     Jwt(
