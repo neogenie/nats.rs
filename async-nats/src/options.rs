@@ -174,6 +174,18 @@ impl ConnectOptions {
         }
     }
 
+    /// Authenticate with a NKey. Requires NKey Seed secret.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> std::io::Result<()> {
+    /// let seed = "SUANQDPB2RUOE4ETUA26CNX7FUKE5ZZKFCQIIW63OX225F2CO7UEXTM7ZY";
+    /// let nc = async_nats::ConnectOptions::with_nkey(seed.into())
+    ///     .connect("localhost").await?;
+    /// # std::io::Result::Ok(())
+    /// # }
+    /// ```
     pub fn with_nkey(seed: SecStr) -> Self {
         ConnectOptions {
             auth: Authorization::NKey(

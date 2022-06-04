@@ -984,20 +984,29 @@ pub async fn connect_with_options<A: ToServerAddrs>(
             connect_info.pass = Some(pass);
         }
         Authorization::NKey(seed) => {
-            let key_pair = nkeys::KeyPair::from_seed(std::str::from_utf8(seed.unsecure()).unwrap()).unwrap();
-            let nonce = server_info.nonce.clone();
-            match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
-                Ok(signed) => {
-                    connect_info.nkey = Some(key_pair.public_key().clone());
-                    connect_info.signature = Some(base64_url::encode(&signed));
+            match nkeys::KeyPair::from_seed(str::from_utf8(seed.unsecure()).unwrap()).map_err(AuthError::new) {
+                Ok(key_pair) => {
+                    let nonce = server_info.nonce.clone();
+                    match key_pair.sign(&nonce.as_bytes().to_vec()).map_err(AuthError::new) {
+                        Ok(signed) => {
+                            connect_info.nkey = Some(key_pair.public_key().clone());
+                            connect_info.signature = Some(base64_url::encode(&signed));
+                        }
+                        Err(e) => {
+                            println!(
+                                "Nkey auth is disabled. sign error: {}",
+                                e
+                            );
+                        }
+                    };
                 }
                 Err(e) => {
                     println!(
-                        "Nkey auth is disabled. sign error: {}",
+                        "Nkey auth is disabled. sign error: {} (possibly invalid key or corrupt creds?)",
                         e
                     );
                 }
-            };
+            }
         }
         Authorization::Jwt(jwt, sign_fn) => match sign_fn.call(server_info.nonce.clone()).await {
             Ok(sig) => {
