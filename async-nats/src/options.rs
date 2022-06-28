@@ -13,9 +13,9 @@
 
 use crate::{Authorization, Client, ServerError, ToServerAddrs};
 use futures::Future;
+use secstr::SecStr;
 use std::fmt::Formatter;
 use std::{fmt, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
-use secstr::SecStr;
 use tokio::io;
 use tokio_rustls::rustls;
 
@@ -188,9 +188,7 @@ impl ConnectOptions {
     /// ```
     pub fn with_nkey(seed: SecStr) -> Self {
         ConnectOptions {
-            auth: Authorization::NKey(
-                seed,
-            ),
+            auth: Authorization::NKey(seed),
             ..Default::default()
         }
     }
